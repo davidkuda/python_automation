@@ -72,8 +72,8 @@ class GitLabProjectVarClient(GitLabClient):
         return self.post(url, post_body)
 
     def update_project_variable(self, var_key: str, var_value: str):
-        endpoint = f'/projects/{self.project_num}/variables'
         var_key = var_key.upper()
+        endpoint = f'/projects/{self.project_num}/variables/{var_key}'
 
         body = {
             "variable_type": "env_var",
@@ -128,7 +128,6 @@ def set_vars_of_project(project_num):
         else:
             response = gitlab_project_var_client.update_project_variable(
                 var_key, var_value)
-            print(response)
 
         print(f'Set the variable "{var_key}".')
 
