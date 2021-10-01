@@ -12,6 +12,8 @@
 #
 
 import os
+import configparser
+from pprint import pprint
 
 import requests
 
@@ -50,6 +52,10 @@ class GitLabProjectVarClient(GitLabClient):
         super().__init__(gitlab_access_token, api_base_url)
         self.project_num = project_num
 
+    def get_project_vars(self):
+        endpoint = f'/projects/{self.project_num}/variables'
+        return self.get(endpoint)
+
     def create_project_variable(self, var_key: str, var_value: str):
         url = f'/projects/{self.project_num}/variables'
         var_key = var_key.upper()
@@ -78,7 +84,19 @@ class GitLabProjectVarClient(GitLabClient):
             "environment_scope": "*"
         }
 
-        return self.post(endpoint, body)
+        return self.put(endpoint, body)
+
+
+def main():
+    A = 464
+    B = 466
+    C = 473
+
+    PROJECT_NUMS = [A, B, C]
+
+    # for project_num in PROJECT_NUMS:
+        # set_vars_of_project(project_num)
+    set_vars_of_project(C)
 
 
 def set_vars_of_project(project_num):
@@ -90,6 +108,9 @@ def set_vars_of_project(project_num):
         project_num=project_num
     )
 
+    existing_variables = gitlab_project_var_client.get_project_vars()
+    existing_var_keys = [v['key'] for v in existing_variables]
+
     vars = {
         "Data": "Dave",
         "Dater": "Daver",
@@ -97,25 +118,24 @@ def set_vars_of_project(project_num):
     }
 
     for var_key, var_value in vars.items():
-        response = gitlab_project_var_client.create_project_variable(
-            var_key, var_value)
+        var_key = var_key.upper()
+        
+        is_taken = check_if_var_is_taken(existing_var_keys, var_key)
 
-        if var_key in response['message']['key'][0]:
-            gitlab_project_var_client.update_project_variable(
+        if not is_taken:
+            response = gitlab_project_var_client.create_project_variable(
                 var_key, var_value)
+        else:
+            response = gitlab_project_var_client.update_project_variable(
+                var_key, var_value)
+            print(response)
 
         print(f'Set the variable "{var_key}".')
 
 
-def main():
-    A = 0
-    B = 1
-    C = 2
-
-    PROJECT_NUMS = [A, B, C]
-
-    for project_num in PROJECT_NUMS:
-        set_vars_of_project(project_num)
+def check_if_var_is_taken(existing_vars: list, var_key: str):
+    if var_key in existing_vars:
+        return True
 
 
 if __name__ == '__main__':
