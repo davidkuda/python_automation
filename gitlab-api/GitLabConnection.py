@@ -21,10 +21,10 @@ from custom_exceptions import UnsuccessfulAuthentication
 class GitLabConnection:
     def __init__(self, gitlab_access_token, api_base_url) -> None:
         self.gitlab_access_token = gitlab_access_token
+        self.api_base_url = api_base_url
         self.headers = {
             'PRIVATE-TOKEN': gitlab_access_token
         }
-        self.api_base_url = api_base_url
         self.check_authentication()
 
     def check_authentication(self):
@@ -34,7 +34,6 @@ class GitLabConnection:
             raise UnsuccessfulAuthentication(response.get('error_description'))
         else:
             return True
-        
 
     def get(self, api_endpoint: str):
         # Two examples:
@@ -131,10 +130,25 @@ class GitLabProjectVariables(GitLabConnection):
             "masked": False,
             "environment_scope": "*"
         }
-
         return self.put(endpoint, body)
 
     def set_project_variables(self, variables: dict):
+        """Sets the variables of the project according to the passed arg.
+        
+        Args:
+            variables (Dict[str: str]):
+                This method will set the variables of this GitLab project
+                to the variables passed as this argument.
+                
+                Make sure to use this format:
+                
+                variables = {
+                    "variable_key": "variable_value",
+                    "Data": "Dave",
+                    "Dater": "Daver",
+                    "Daterr": "Daverr"
+                }
+        """
 
         for var_key, var_value in variables.items():
             var_key = var_key.upper()
