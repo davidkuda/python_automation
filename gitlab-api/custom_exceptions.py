@@ -1,2 +1,0 @@
-class UnsuccessfulAuthentication(Exception):
-    pass
